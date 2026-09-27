@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "MACCA2026": ["PEER_WORKER_PRIMARY_INTEGRATION", "implementation", "review", "canonical-integration", "migration-allocation", "deployment", "live-atz-write"],
+  "SNAPDRAGON": ["PEER_WORKER", "implementation", "review", "deployment", "live-atz-write"]
+}

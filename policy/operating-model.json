@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "one_branch_one_active_worktree_one_machine": true,
+  "shared_product_git_common_dir_forbidden": true,
+  "shared_product_worktree_forbidden": true,
+  "onedrive_active_product_development_forbidden": true,
+  "canonical_as_scratch_workspace_forbidden": true,
+  "claim_required_before_implementation": true,
+  "claim_required_before_review": true,
+  "migration_reservation_required": true,
+  "canonical_integration_lock_required": true,
+  "deployment_lock_required": true,
+  "live_atz_write_lock_required": true,
+  "stale_claim_auto_steal_forbidden": true,
+  "force_push_control_repo_forbidden": true,
+  "source_machine_retains_handoff_until_accepted": true,
+  "lease_minutes": 60,
+  "push_race_retries": 3
+}

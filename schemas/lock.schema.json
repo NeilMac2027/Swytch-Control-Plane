@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["schema_version","lock_id","owner_machine","lane_id","claimed_at","lease_until"],"properties":{"lock_id":{"enum":["canonical-integration","migration-allocation","deployment","live-atz-write"]}}}
