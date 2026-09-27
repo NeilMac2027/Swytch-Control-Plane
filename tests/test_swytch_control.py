@@ -1,7 +1,8 @@
-import json, sys, unittest
+import json, sys, unittest, importlib.util
 from pathlib import Path
-sys.path.insert(0, r'C:\Swyt-Control\shared\tools')
-import swytch_control as c
+spec = importlib.util.spec_from_file_location('swytch_control', r'C:\Swyt-Control\shared\tools\swyt_control.py')
+c = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(c)
 
 def lane(**kw):
     base = {'lane_id':'x','owner_machine':'MACCA2026','branch':'b','worktree':'C:\\work\\x','owned_paths':['src/a'],'migration_numbers':[],'status':'ACTIVE','product_scope':False}
@@ -23,6 +24,7 @@ class CollisionTests(unittest.TestCase):
     def test_windows_casing_and_slashes(self): self.assertRaises(RuntimeError, self.check, lane(lane_id='new',branch='new',worktree='C:/work/new',owned_paths=['SRC/A']), [lane()])
     def test_migration_collision(self): self.assertRaises(RuntimeError, self.check, lane(lane_id='new',branch='new',worktree='C:\\work\\new',owned_paths=['src/b'],migration_numbers=['0042']), [lane(migration_numbers=['0042'])])
     def test_stale_claim_no_auto_steal(self): self.assertRaises(RuntimeError, self.check, lane(lane_id='new',branch='new',worktree='C:\\work\\new'), [lane(status='STALE_REQUIRES_RECONCILIATION',branch='new')])
+    def test_expired_active_claim_no_auto_steal(self): self.assertRaises(RuntimeError, self.check, lane(lane_id='new',branch='new',worktree='C:\\work\\new'), [lane(branch='new', lease_until='2000-01-01T00:00:00+00:00')])
 
 class ModelTests(unittest.TestCase):
     def test_path_overlap(self):

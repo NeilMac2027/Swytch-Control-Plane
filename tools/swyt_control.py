@@ -40,7 +40,8 @@ def check_claim(args, candidate, existing=None):
         if old.get('lane_id') == candidate.get('lane_id'): fail('duplicate lane')
         if old.get('branch') == candidate.get('branch'): fail('duplicate branch')
         if norm(old.get('worktree','')) == norm(candidate.get('worktree','')): fail('duplicate worktree')
-        if old.get('status') == 'STALE_REQUIRES_RECONCILIATION':
+        old_stale = old.get('status') == 'STALE_REQUIRES_RECONCILIATION' or expired(old.get('lease_until','9999-12-31T00:00:00+00:00'))
+        if old_stale:
             if old.get('branch')==candidate.get('branch') or any(path_overlap(a,b) for a in old.get('owned_paths',[]) for b in candidate.get('owned_paths',[])): fail('stale conflicting claim requires reconciliation')
         if any(path_overlap(a,b) for a in old.get('owned_paths',[]) for b in candidate.get('owned_paths',[])): fail('owned path collision')
         if set(old.get('migration_numbers',[])) & set(candidate.get('migration_numbers',[])): fail('migration collision')
@@ -66,7 +67,9 @@ def mutate(action, paths):
 def cmd_status(_):
     print(json.dumps({'lanes':lanes(),'locks':[load(p) for p in LOCKS.glob('*.json')],'handoffs':[load(p) for p in HANDOFFS.glob('*.json')]},indent=2))
 def cmd_check(_):
+    required={'schema_version','lane_id','description','owner_machine','repository','branch','worktree','base_sha','current_sha','status','owned_paths','migration_numbers','dependencies','handoff_target','claimed_at','heartbeat_at','lease_until','review_status','notes'}
     for l in lanes():
+        if not required <= set(l): fail(f'missing lane fields: {l.get("lane_id")}')
         if l['status'] not in STATUSES: fail(f'invalid status: {l["lane_id"]}')
     print('PASS')
 def cmd_claim(a):
@@ -92,7 +95,7 @@ def cmd_accept(a):
 def cmd_lock(a):
     if a.lock_id not in LOCK_NAMES: fail('invalid lock')
     p=LOCKS/(a.lock_id+'.json');
-    if p.exists() and not expired(load(p)['lease_until']): fail('lock held')
+    if p.exists(): fail('lock held or stale; explicit unlock/reconciliation required')
     t=now(); rec={'schema_version':1,'lock_id':a.lock_id,'owner_machine':a.machine,'lane_id':a.lane_id,'claimed_at':t,'lease_until':(parse_time(t)+dt.timedelta(minutes=60)).isoformat()}; mutate(lambda:dump(p,rec),[p]); print('LOCKED',a.lock_id)
 def cmd_unlock(a):
     p=LOCKS/(a.lock_id+'.json');
